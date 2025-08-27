@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0f0f0f">
+    <title>High-Speed MFSK Image Converter</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>ECHOSPHERE.X </h1>
+            <p class="header-subtitle">Convert images to/from Multiple Frequency Shift Keying (MFSK) audio signals • 10-50 kbps</p>
+        </header>
+
+        <main class="main">
+            <!-- Tab Navigation -->
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="encode">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Encode Image → Audio
+                </button>
+                <button class="tab-btn" data-tab="decode">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 9v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4"/>
+                        <polyline points="7 16 12 21 17 16"/>
+                        <line x1="12" y1="9" x2="12" y2="21"/>
+                    </svg>
+                    Decode Audio → Image
+                </button>
+            </div>
+
+            <!-- Encode Tab -->
+            <div class="tab-content active" id="encode-tab">
+                <!-- Preset Selection -->
+                <section class="preset-section">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Speed Preset</h2>
+                            <div class="preset-buttons">
+                                <button class="btn btn--secondary preset-btn" data-preset="fast">
+                                    Fast (50 kbps)
+                                    <span class="preset-desc">3ms symbols</span>
+                                </button>
+                                <button class="btn btn--secondary preset-btn active" data-preset="balanced">
+                                    Balanced (25 kbps)
+                                    <span class="preset-desc">5ms symbols</span>
+                                </button>
+                                <button class="btn btn--secondary preset-btn" data-preset="reliable">
+                                    Reliable (12 kbps)
+                                    <span class="preset-desc">8ms symbols</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Image Upload -->
+                <section class="upload-section">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Upload Image</h2>
+                            <label for="imageInput" class="file-upload-area" id="imageUploadArea">
+                                <div class="upload-content">
+                                    <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <polyline points="21 15 16 10 5 21"/>
+                                    </svg>
+                                    <p class="upload-text">Drop image here or click to select</p>
+                                    <p class="upload-subtext">JPG, PNG, GIF, BMP • Max 1024×768</p>
+                                </div>
+                                <input type="file" id="imageInput" accept="image/jpeg,image/jpg,image/png,image/gif,image/bmp" hidden>
+                            </div>
+                            
+                            <div class="file-info hidden" id="imageInfo">
+                                <div class="file-preview">
+                                    <img id="imagePreview" alt="Image preview">
+                                </div>
+                                <div class="file-details">
+                                    <p><strong>File:</strong> <span id="imageFileName"></span></p>
+                                    <p><strong>Size:</strong> <span id="imageFileSize"></span></p>
+                                    <p><strong>Compressed:</strong> <span id="compressedSize"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Encoding Controls -->
+                <section class="encode-section">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Generate MFSK Audio</h2>
+                            <div class="encode-info">
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">Data Rate:</span>
+                                        <span class="info-value" id="encodeDataRate">25 kbps</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Duration:</span>
+                                        <span class="info-value" id="encodeDuration">~0s</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Tones:</span>
+                                        <span class="info-value">MFSK-64</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Frequency:</span>
+                                        <span class="info-value">2000±1575 Hz</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn--primary btn--full-width" id="encodeBtn" disabled>
+                                Generate MFSK Audio
+                            </button>
+                            
+                            <div class="progress-section hidden" id="encodeProgress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="encodeProgressFill"></div>
+                                </div>
+                                <p class="progress-text" id="encodeProgressText">Processing...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Audio Output -->
+                <section class="audio-output-section hidden" id="audioOutput">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Generated Audio</h2>
+                            <div class="audio-controls">
+                                <audio controls class="audio-player" id="audioPlayer">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                            
+                            <div class="audio-stats">
+                                <p><strong>Duration:</strong> <span id="actualDuration"></span></p>
+                                <p><strong>File Size:</strong> <span id="audioFileSize"></span></p>
+                                <p><strong>Actual Rate:</strong> <span id="actualDataRate"></span></p>
+                            </div>
+                            
+                            <button class="btn btn--primary btn--full-width" id="downloadAudioBtn">
+                                Download WAV Audio
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Decode Tab -->
+            <div class="tab-content" id="decode-tab">
+                <!-- Audio Input Method -->
+                <section class="input-method-section">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Select Input Method</h2>
+                            <div class="input-method-buttons">
+                                <button class="btn btn--secondary method-btn active" data-method="file">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14 2 14 8 20 8"/>
+                                        <line x1="16" y1="13" x2="8" y2="13"/>
+                                        <line x1="16" y1="17" x2="8" y2="17"/>
+                                        <polyline points="10 9 9 9 8 9"/>
+                                    </svg>
+                                    Upload Audio File
+                                </button>
+                                <button class="btn btn--secondary method-btn" data-method="microphone">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                        <line x1="12" y1="19" x2="12" y2="23"/>
+                                        <line x1="8" y1="23" x2="16" y2="23"/>
+                                    </svg>
+                                    Live Microphone
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- File Upload Method -->
+                <section class="file-decode-section" id="fileDecodeSection">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Upload MFSK Audio</h2>
+                            <label for="audioInput" class="file-upload-area" id="audioUploadArea">
+                                <div class="upload-content">
+                                    <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M9 18V5l12-2v13"/>
+                                        <circle cx="6" cy="18" r="3"/>
+                                        <circle cx="18" cy="16" r="3"/>
+                                    </svg>
+                                    <p class="upload-text">Drop MFSK audio here or click to select</p>
+                                    <p class="upload-subtext">WAV, MP3, OGG files supported</p>
+                                </div>
+                                <input type="file" id="audioInput" accept="audio/wav,audio/mp3,audio/ogg" hidden>
+                            </div>
+                            
+                            <div class="file-info hidden" id="audioInfo">
+                                <div class="file-details">
+                                    <p><strong>File:</strong> <span id="audioFileName"></span></p>
+                                    <p><strong>Size:</strong> <span id="audioUploadSize"></span></p>
+                                    <p><strong>Duration:</strong> <span id="audioDuration"></span></p>
+                                </div>
+                                
+                                <button class="btn btn--primary btn--full-width" id="decodeFileBtn">
+                                    Decode Audio File
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Microphone Method -->
+                <section class="mic-decode-section hidden" id="micDecodeSection">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Live Microphone Decoding</h2>
+                            <div class="mic-controls">
+                                <button class="btn btn--primary" id="startMicBtn">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"/>
+                                    </svg>
+                                    Start Listening
+                                </button>
+                                <button class="btn btn--outline hidden" id="stopMicBtn">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <rect x="6" y="4" width="4" height="16"/>
+                                        <rect x="14" y="4" width="4" height="16"/>
+                                    </svg>
+                                    Stop Listening
+                                </button>
+                            </div>
+
+                            <!-- Real-time Visualizer -->
+                            <div class="visualizer-section hidden" id="visualizer">
+                                <h3>Signal Analysis</h3>
+                                <canvas id="spectrumCanvas" width="600" height="200"></canvas>
+                                <div class="signal-info">
+                                    <div class="signal-strength">
+                                        <span class="signal-label">Signal Strength:</span>
+                                        <div class="signal-bar">
+                                            <div class="signal-fill" id="signalFill"></div>
+                                        </div>
+                                        <span class="signal-value" id="signalValue">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Decoding Progress -->
+                <section class="decode-progress-section hidden" id="decodeProgressSection">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Decoding Progress</h2>
+                            <div class="progress-section">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="decodeProgressFill"></div>
+                                </div>
+                                <p class="progress-text" id="decodeProgressText">Analyzing audio...</p>
+                            </div>
+                            <div class="decode-stats">
+                                <p><strong>Decoded Bits:</strong> <span id="decodedBits">0</span></p>
+                                <p><strong>Error Rate:</strong> <span id="errorRate">0%</span></p>
+                                <p><strong>Signal Quality:</strong> <span id="signalQuality">Unknown</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Decoded Image Output -->
+                <section class="image-output-section hidden" id="imageOutput">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Decoded Image</h2>
+                            <div class="decoded-image-container">
+                                <img id="decodedImage" alt="Decoded image">
+                            </div>
+                            
+                            <div class="decode-results">
+                                <p><strong>Image Size:</strong> <span id="decodedImageSize"></span></p>
+                                <p><strong>Decode Time:</strong> <span id="decodeTime"></span></p>
+                                <p><strong>Success Rate:</strong> <span id="successRate"></span></p>
+                            </div>
+                            
+                            <button class="btn btn--primary btn--full-width" id="downloadImageBtn">
+                                Download Decoded Image
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+<footer class="footer-tagline">
+  <!-- Choose one of the following lines for different tones -->
+
+  <!-- Professional -->
+  <p class="tagline professional">
+    © 2025 AI Research and Development (R&D)Project — Crafted by K. Tharun, D. Nikhil Varma &amp; B. Prakeerthi
+  </p>
+
+  <!-- Creative -->
+  <!--
+  <p class="tagline creative">
+    An original contribution by K. Tharun, D. Nikhil Varma & B. Prakeerthi © 2025
+  </p>
+  -->
+
+  <!-- Legal -->
+  <!--
+  <p class="tagline legal">
+    © 2025 AI Project — Intellectual Property of K. Tharun, D. Nikhil Varma &amp; B. Prakeerthi. All rights reserved.
+  </p>
+  -->
+</footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
